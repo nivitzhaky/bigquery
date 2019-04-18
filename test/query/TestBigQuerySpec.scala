@@ -31,7 +31,7 @@ class TestBigQuerySpec extends Specification with ResultMatchers with MatcherMac
 
     "Select category customer with condition" in new TestContext {
       new QueryBuilder(meta).withField("customer").withField("productcategory")
-        .withCondition("numpurchases", ">", "2")
+        .withCondition("orderid", ">", "2")
         .doQuery().data.toSet must_=== Set(
         QRRow(Map("productcategory" -> "Office Supplies", "customer"-> "673" )),
         QRRow(Map("productcategory" -> "Furniture", "customer"-> "297")),
@@ -167,7 +167,7 @@ class TestBigQuerySpec extends Specification with ResultMatchers with MatcherMac
 
     "make property steps report" in new TestContext {
       new QueryBuilder(meta).withCondition("orderdate", ">=","'2017-01-01'").
-        withCondition("numpurchases", ">=","3").
+        withCondition("orderid", ">=","3").
         makeFieldStepReport("sumpurchases",0,4000,1000).
         data.toList must_=== List(
            QRRow(Map("count" -> "25", "step" -> "0 to 999", "avg" -> "649.79527200000007", "lower" -> "0.0", "stddev" -> "252.20585008064265",
@@ -188,5 +188,27 @@ class TestBigQuerySpec extends Specification with ResultMatchers with MatcherMac
         doQuery().data.toSet must_=== Set(
         QRRow(Map("customer"-> "693" )))
     }
+
+    "Pareto by property" in new TestContext {
+      new QueryBuilder(meta).makeParetoReport("sumpurchases").
+        data.toSet must_=== Set(
+        QRRow(Map("groupname" -> "Group 1","count" -> "158", "avg" -> "6973.2999120253144", "lower" -> "4299.1609999999991", "upper" -> "25043.05",  "stddev" -> "2991.5897053518584", "sum" -> "1101781.3861000002")),
+        QRRow(Map("groupname" -> "Group 2","count" -> "127", "avg" -> "3530.774589763781", "lower" -> "2955.2259999999997", "upper" -> "4282.9400000000005",  "stddev" -> "393.88534441997012", "sum" -> "448408.3728999999")),
+        QRRow(Map("groupname" -> "Group 3","count" -> "101", "avg" -> "2634.7045435643563", "lower" -> "2332.577", "upper" -> "2945.321", "stddev" -> "186.2841436764613", "sum" -> "266105.15890000004")),
+        QRRow(Map("groupname" -> "Group 4","count" -> "81", "avg" -> "2087.249885185186", "lower" -> "1824.234", "upper" -> "2305.712",  "stddev" -> "150.52371487391252", "sum" -> "169067.24069999994")),
+        QRRow(Map("groupname" -> "Group 5","count" -> "326", "avg" -> "956.56043466257609", "lower" -> "4.833", "upper" -> "1821.7420000000002",  "stddev" -> "492.40885078403176", "sum" -> "311838.70170000009"))
+      )
+    }
+    "Pareto by sales" in new TestContext {
+      new QueryBuilder(meta).withCondition("orderdate", ">", "'2017-01-01'").makeParetoReport("paid").
+        data.toSet must_=== Set(
+        QRRow(Map("groupname" -> "Group 1","count" -> "138", "avg" -> "3181.3417499999978", "lower" -> "1603.478", "upper" -> "14203.277999999998",  "stddev" -> "2083.5070374467546", "sum" -> "439025.16150000005")),
+        QRRow(Map("groupname" -> "Group 2","count" -> "111", "avg" -> "1235.1399792792786", "lower" -> "920.61799999999994", "upper" -> "1590.116",  "stddev" -> "190.85963430283599", "sum" -> "137100.5377")),
+        QRRow(Map("groupname" -> "Group 3","count" -> "88", "avg" -> "784.26676136363665", "lower" -> "637.18000000000006", "upper" -> "919.22000000000014", "stddev" -> "83.1418713315116", "sum" -> "69015.474999999977")),
+        QRRow(Map("groupname" -> "Group 4","count" -> "71", "avg" -> "541.062152112676", "lower" -> "454.368", "upper" -> "637.024",  "stddev" -> "52.422165088415596", "sum" -> "38415.412800000006")),
+        QRRow(Map("groupname" -> "Group 5", "count" -> "285", "avg" -> "169.04154456140347", "lower" -> "1.188", "upper" -> "449.312", "stddev" -> "129.43672213788426", "sum" -> "48176.840200000064"))
+      )
+    }
+
   }
 }

@@ -335,7 +335,48 @@ class QueryBuilder(analyticsMeta: AnalyticsMeta) {
     doQuery(sql)
   }
 
+  def makeParetoReport(field : String) = {
+    fieldData.clear()
+    fieldData+=analyticsMeta.customerColumn(false)
+    var total = duplicateThisBuilder().doQuery().data(0).fields("customer").toLong
 
+
+    fieldData.clear()
+    val fld = analyticsMeta.fieldsMap(field)
+    val cust = analyticsMeta.customerColumn(true)
+    val tbl = analyticsMeta.schema + "." + analyticsMeta.customersTable
+    fieldData+=cust
+    fieldData.+=(fld)
+    val inner = buildQuerySql()
+    var res : ArrayBuffer[QRRow] =ArrayBuffer.empty[QRRow]
+
+    var i = 0;
+    var max : Option[String] = None
+    while (i < 5) {
+      val row = genericParetoOneStep(inner,fld.getName, max, if (i < 4)  Some((total * 20) / 100) else None, "Group " + (i+1))
+      res += row(0)
+      total -= (total * 20) / 100
+      max = row(0).fields.get("lower")
+      i+=1
+    }
+    QueryResult(res.toList)
+  }
+
+  def genericParetoOneStep( baseSql : String, fldname : String, maxValue : Option[String], maxCusts : Option[Long], group : String) = {
+    val whereSql = maxValue.map(x=> s" where $fldname < $x ").getOrElse("")
+    val limitSql = maxCusts.map(x=> s" limit $x ").getOrElse("")
+    val sql =
+      s"""
+         |select '$group' as groupname, min($fldname) as lower, max($fldname) as upper, sum($fldname) as sum , count(*) as count, avg($fldname) as avg, STDDEV($fldname)  as stddev
+         |from (select * from  ($baseSql)  $whereSql order by $fldname desc $limitSql)
+      """.stripMargin
+
+
+
+    fieldData.clear()
+    withFakeFields(List("groupname","lower","upper","sum","count","avg","stddev"))
+    doQuery(sql).data
+  }
 
   def doQuery(): QueryResult = {
     val query = buildQuerySql()
