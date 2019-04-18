@@ -40,17 +40,17 @@ class TestBigQuerySpec extends Specification with ResultMatchers with MatcherMac
     }
 
     "Select category customer with sum purchases" in new TestContext {
-      new QueryBuilder(meta).withField("customer").withField("sumpurchases")
+      new QueryBuilder(meta).withField("customer").withField("paid")
         .doQuery().data.toSet must_=== Set(
-        QRRow(Map("sumpurchases" -> "2297200.8603000012", "customer"-> "793" ))
+        QRRow(Map("paid" -> "2297200.8602999565", "customer"-> "793" ))
       )
     }
 
     "Select category customer with sum purchases and product" in new TestContext {
-      new QueryBuilder(meta).withField("customer").withField("sumpurchases")
+      new QueryBuilder(meta).withField("customer").withField("paid")
         .withCondition("productcategory", "=", "'Office Supplies'")
         .doQuery().data.toSet must_=== Set(
-        QRRow(Map("sumpurchases" -> "20935133.469299879", "customer"-> "788" ))
+        QRRow(Map("paid" -> "719047.03200000094", "customer"-> "788" ))
       )
     }
 
@@ -161,6 +161,23 @@ class TestBigQuerySpec extends Specification with ResultMatchers with MatcherMac
           "stddev" -> "304.15692693185895", "sum" -> "105235.39950000003")),
         QRRow(Map("count" -> "17", "step" -> "3000 to 3999", "avg" -> "3386.9346941176468", "lower" -> "3000.0",
           "stddev" -> "268.92665796442651", "sum" -> "57577.8898"))
+
+      )
+    }
+
+    "make property steps report" in new TestContext {
+      new QueryBuilder(meta).withCondition("orderdate", ">=","'2017-01-01'").
+        withCondition("numpurchases", ">=","3").
+        makeFieldStepReport("sumpurchases",0,4000,1000).
+        data.toList must_=== List(
+           QRRow(Map("count" -> "25", "step" -> "0 to 999", "avg" -> "649.79527200000007", "lower" -> "0.0", "stddev" -> "252.20585008064265",
+             "sum" -> "16244.881800000001")),
+            QRRow(Map("count" -> "58", "step" -> "1000 to 1999", "avg" -> "1485.5780637931036", "lower" -> "1000.0", "stddev" -> "295.93945259912135",
+              "sum" -> "86163.527700000021")),
+          QRRow(Map("count" -> "71", "step" -> "2000 to 2999", "avg" -> "2557.4598211267607", "lower" -> "2000.0", "stddev" -> "252.40335758803036",
+            "sum" -> "181579.6473")),
+          QRRow(Map("count" -> "53", "step" -> "3000 to 3999", "avg" -> "3482.2186301886795", "lower" -> "3000.0", "stddev" -> "283.82107053578306",
+            "sum" -> "184557.58740000011"))
 
       )
     }
