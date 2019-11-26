@@ -1,6 +1,6 @@
 package query
 
-import algo.{QRRow, QueryBuilder, QueryResult}
+import algo.{QRRow, QueryBuilder, QueryResult, RegCalcField}
 import org.specs2.matcher.{MatcherMacros, MustMatchers, ResultMatchers}
 import org.specs2.mutable.Specification
 
@@ -137,14 +137,14 @@ class TestBigQuerySpec extends Specification with ResultMatchers with MatcherMac
     "make property report" in new TestContext {
       new QueryBuilder(meta).makeProprtyStepReport("sumpurchases",0,4000,1000).
         data.toList must_=== List(
-        QRRow(Map("count" -> "167", "step" -> "0 to 999", "avg" -> "552.89301676646687", "lower" -> "0.0",
-          "stddev" -> "296.89287246958725", "sum" -> "92333.133799999981")),
+        QRRow(Map("count" -> "167", "step" -> "0 to 999", "avg" -> "552.89301676646721", "lower" -> "0.0",
+          "stddev" -> "296.89287246958725", "sum" -> "92333.1338")),
         QRRow(Map("count" -> "186", "step" -> "1000 to 1999", "avg" -> "1456.1203715053766", "lower" -> "1000.0",
-          "stddev" -> "281.93124951435834", "sum" -> "270838.38910000003")),
-        QRRow(Map("count" -> "161", "step" -> "2000 to 2999", "avg" -> "2494.971412422361", "lower" -> "2000.0",
-          "stddev" -> "279.66361883066708", "sum" -> "401690.3973999999")),
+          "stddev" -> "281.93124951435829", "sum" -> "270838.38910000003")),
+        QRRow(Map("count" -> "161", "step" -> "2000 to 2999", "avg" -> "2494.9714124223619", "lower" -> "2000.0",
+          "stddev" -> "279.66361883066691", "sum" -> "401690.39739999996")),
         QRRow(Map("count" -> "104", "step" -> "3000 to 3999", "avg" -> "3454.0825326923086", "lower" -> "3000.0",
-          "stddev" -> "303.15339002617952", "sum" -> "359224.58340000006"))
+          "stddev" -> "303.15339002617952", "sum" -> "359224.58340000012"))
 
       )
     }
@@ -153,14 +153,14 @@ class TestBigQuerySpec extends Specification with ResultMatchers with MatcherMac
       new QueryBuilder(meta).withCondition("orderdate", ">=","'2017-01-01'").
         makeFieldStepReport("paid",0,4000,1000).
         data.toList must_=== List(
-        QRRow(Map("count" -> "456", "step" -> "0 to 999", "avg" -> "366.61140570175434", "lower" -> "0.0", "stddev" -> "290.62415397914197",
-          "sum" -> "167174.801")),
-        QRRow(Map("count" -> "145", "step" -> "1000 to 1999", "avg" -> "1434.0531579310341", "lower" -> "1000.0",
-          "stddev" -> "285.0479765093578", "sum" -> "207937.70789999995")),
-        QRRow(Map("count" -> "43", "step" -> "2000 to 2999", "avg" -> "2447.3348720930239", "lower" -> "2000.0",
-          "stddev" -> "304.15692693185895", "sum" -> "105235.39950000003")),
+        QRRow(Map("count" -> "456", "step" -> "0 to 999", "avg" -> "366.61140570175422", "lower" -> "0.0", "stddev" -> "290.62415397914197",
+          "sum" -> "167174.80099999992")),
+        QRRow(Map("count" -> "145", "step" -> "1000 to 1999", "avg" -> "1434.0531579310343", "lower" -> "1000.0",
+          "stddev" -> "285.04797650935791", "sum" -> "207937.70790000007")),
+        QRRow(Map("count" -> "43", "step" -> "2000 to 2999", "avg" -> "2447.3348720930244", "lower" -> "2000.0",
+          "stddev" -> "304.15692693185872", "sum" -> "105235.39949999998")),
         QRRow(Map("count" -> "17", "step" -> "3000 to 3999", "avg" -> "3386.9346941176468", "lower" -> "3000.0",
-          "stddev" -> "268.92665796442651", "sum" -> "57577.8898"))
+          "stddev" -> "268.92665796442634", "sum" -> "57577.8898"))
 
       )
     }
@@ -170,14 +170,14 @@ class TestBigQuerySpec extends Specification with ResultMatchers with MatcherMac
         withCondition("orderid", ">=","3").
         makeFieldStepReport("sumpurchases",0,4000,1000).
         data.toList must_=== List(
-           QRRow(Map("count" -> "25", "step" -> "0 to 999", "avg" -> "649.79527200000007", "lower" -> "0.0", "stddev" -> "252.20585008064265",
+           QRRow(Map("count" -> "25", "step" -> "0 to 999", "avg" -> "649.795272", "lower" -> "0.0", "stddev" -> "252.20585008064262",
              "sum" -> "16244.881800000001")),
-            QRRow(Map("count" -> "58", "step" -> "1000 to 1999", "avg" -> "1485.5780637931036", "lower" -> "1000.0", "stddev" -> "295.93945259912135",
-              "sum" -> "86163.527700000021")),
-          QRRow(Map("count" -> "71", "step" -> "2000 to 2999", "avg" -> "2557.4598211267607", "lower" -> "2000.0", "stddev" -> "252.40335758803036",
-            "sum" -> "181579.6473")),
-          QRRow(Map("count" -> "53", "step" -> "3000 to 3999", "avg" -> "3482.2186301886795", "lower" -> "3000.0", "stddev" -> "283.82107053578306",
-            "sum" -> "184557.58740000011"))
+            QRRow(Map("count" -> "58", "step" -> "1000 to 1999", "avg" -> "1485.5780637931034", "lower" -> "1000.0", "stddev" -> "295.93945259912135",
+              "sum" -> "86163.5277")),
+          QRRow(Map("count" -> "71", "step" -> "2000 to 2999", "avg" -> "2557.45982112676", "lower" -> "2000.0", "stddev" -> "252.40335758803033",
+            "sum" -> "181579.64729999992")),
+          QRRow(Map("count" -> "53", "step" -> "3000 to 3999", "avg" -> "3482.21863018868", "lower" -> "3000.0", "stddev" -> "283.82107053578306",
+            "sum" -> "184557.58740000002"))
 
       )
     }
@@ -208,6 +208,59 @@ class TestBigQuerySpec extends Specification with ResultMatchers with MatcherMac
         QRRow(Map("groupname" -> "Group 4","count" -> "71", "avg" -> "541.062152112676", "lower" -> "454.368", "upper" -> "637.024",  "stddev" -> "52.422165088415596", "sum" -> "38415.412800000006")),
         QRRow(Map("groupname" -> "Group 5", "count" -> "285", "avg" -> "169.04154456140347", "lower" -> "1.188", "upper" -> "449.312", "stddev" -> "129.43672213788426", "sum" -> "48176.840200000064"))
       )
+    }
+
+
+    "field updates" in new TestContext {
+      new QueryBuilder(meta).withFakeFields(List("customer","paid")).doQuery("select customer,paid from  (" +
+        new QueryBuilder(meta).withCondition("orderdate", ">", "'2017-01-01'").getUpdateCustomerSql("paid") +
+        ") order by customer limit 5"
+      ).data.toSet must_=== Set(
+        QRRow(Map("customer" -> "AA-10645", "paid" -> "12.96")),
+        QRRow(Map("customer" -> "AA-10480", "paid" -> "15.552")),
+        QRRow(Map("customer" -> "AA-10315", "paid" -> "374.48")),
+        QRRow(Map("customer" -> "AA-10375", "paid" -> "206.73200000000003")),
+        QRRow(Map("customer" -> "AB-10060", "paid" -> "2936.264")))
+
+      new QueryBuilder(meta).withFakeFields(List("customer","paid")).doQuery("select customer,paid from  (" +
+        new QueryBuilder(meta).withCondition("orderdate", ">", "'2017-01-01'").withCondition("orderid",">=","2").getUpdateCustomerSql("paid") +
+        ") order by customer limit 5"
+      ).data.toSet must_=== Set(
+        QRRow(Map("customer" -> "AD-10180", "paid" -> "163.96")),
+        QRRow(Map("customer" -> "AS-10630", "paid" -> "4.608")),
+        QRRow(Map("customer" -> "SJ-20215", "paid" -> "317.058")),
+        QRRow(Map("customer" -> "EP-13915", "paid" -> "12.96")),
+        QRRow(Map("customer" -> "JG-15160", "paid" -> "302.376")))
+
+      new QueryBuilder(meta).withFakeFields(List("customer","paid")).doQuery("select customer,paid from  (" +
+        new QueryBuilder(meta).withCondition("orderdate", ">", "'2017-01-01'").
+          withCondition("orderid",">=","2").withCondition("productcategory" ,"=", "'Office Supplies'").getUpdateCustomerSql("paid") +
+        ") order by customer limit 5"
+      ).data.toSet must_=== Set(
+        QRRow(Map("customer" -> "AS-10630", "paid" -> "4.608")),
+        QRRow(Map("customer" -> "EP-13915", "paid" -> "12.96")),
+        QRRow(Map("customer" -> "YS-21880", "paid" -> "1000.02")))
+
+      new QueryBuilder(meta).withFakeFields(List("customer","orderid")).doQuery("select customer,orderid from  (" +
+        new QueryBuilder(meta).withCondition("orderdate", ">", "'2017-01-01'").
+         withCondition("productcategory" ,"=", "'Office Supplies'").getUpdateCustomerSql("orderid") +
+        ") order by customer limit 5"
+      ).data.toSet must_=== Set(
+        QRRow(Map("customer" -> "AA-10375", "orderid" -> "2")),
+        QRRow(Map("customer" -> "AB-10060", "orderid" -> "2")),
+        QRRow(Map("customer" -> "AA-10315", "orderid" -> "1")),
+        QRRow(Map("customer" -> "AA-10645", "orderid" -> "1")),
+        QRRow(Map("customer" -> "AA-10480", "orderid" -> "1"))
+      )
+
+    }
+    "do field updates" in new TestContext {
+        val qb = new QueryBuilder(meta)
+        qb.calcCustomerProperties(
+          List(RegCalcField(qb.duplicateThisBuilder(),"paid","total_spend","custom1"),
+            RegCalcField(qb.duplicateThisBuilder(),"orderid","total_orders","custom2")
+          )
+        )
     }
 
   }

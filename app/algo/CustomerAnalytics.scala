@@ -42,6 +42,28 @@ sealed trait FieldData {
   def isAgg = getSelectDetails().selectType.isAggCondition()
 }
 
+sealed trait CalcFieldData {
+  def getAlias: String = ""
+  def getValueFieldName: String = ""
+  def getTargetField : String= ""
+  def getSql: String = ""
+}
+
+case class RegCalcField (builder : QueryBuilder  , summaryField : String , alias : String, targetField : String) extends CalcFieldData {
+  override def getAlias: String = alias
+
+  override def getValueFieldName: String = summaryField
+
+  override def getTargetField: String = targetField
+
+  override def getSql: String = {
+    s"select customer,$summaryField from  (" +
+      builder.getUpdateCustomerSql(summaryField) +
+      ") "
+  }
+}
+
+
 class WrapperFieldDef(meta : AnalyticsMeta,fld : FieldData, sql : String) extends FieldData {
   override def getTitle: String = fld.getTitle
   override def getName: String = fld.getName
@@ -162,6 +184,29 @@ import com.google.cloud.bigquery.QueryJobConfiguration
 import scala.collection.JavaConversions._
 
 class QueryBuilder(analyticsMeta: AnalyticsMeta) {
+  def getUpdateCustomerSql(field : String): String = {
+    fieldData.clear()
+    val fld = analyticsMeta.fieldsMap(field)
+    val cust = analyticsMeta.customerColumn(true)
+    val tbl = analyticsMeta.schema + "." + analyticsMeta.customersTable
+    fieldData+=cust
+    fieldData.+=(fld)
+    buildQuerySql()
+  }
+
+  def calcCustomerProperties(props : List[CalcFieldData])={
+    val sql =
+      s"""
+        |update ${analyticsMeta.schema}.${analyticsMeta.customersTable}  set
+        |${props.map { p =>
+        s" ${p.getTargetField} = (select ${p.getValueFieldName} from (${p.getSql}) as ${p.getAlias} " +
+          s"where ${analyticsMeta.customersTable}.${analyticsMeta.customerColumn().field} = ${p.getAlias}.customer)"
+              }.mkString(",")
+           }
+         where 1=1
+      """.stripMargin
+      exec(sql)
+  }
   import QueryBuilder._
   import scala.collection.Set
   var fieldData: ArrayBuffer[FieldData] = ArrayBuffer.empty[FieldData]
@@ -184,7 +229,7 @@ class QueryBuilder(analyticsMeta: AnalyticsMeta) {
     this
   }
 
-
+  def getMeta = analyticsMeta
   def allTablesButGroup = (fieldData ++ conditions).filterNot(x=>x.getTable.equals(Some("customer_groups")))
 
   lazy val defaultTable = (allTablesButGroup).flatMap(x => x.getTable).headOption.getOrElse(analyticsMeta.customersTable)
@@ -441,8 +486,9 @@ class QueryBuilder(analyticsMeta: AnalyticsMeta) {
     val res= bigq.getQueryResults(jobId)
     0
   }
-  private def withFakeFields(fields : List[String]): Unit = {
+  def withFakeFields(fields : List[String]) = {
     fields.foreach(x=>fieldData+=new FakeFieldDef(analyticsMeta,x))
+    this
   }
 
 
