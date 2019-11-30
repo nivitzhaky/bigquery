@@ -142,7 +142,18 @@ case class AnalyticsMeta(fields: List[FieldDef], relations: List[RelationDef], r
       fieldsMap("customer")
 }
 
-case class QRRow(fields: Map[String, String])
+case class QRRow(fields: Map[String, String]){
+  def r : QRRow ={
+    QRRow( fields.map(x=>(x._1,  x._2.take(getDotPos(x._2) + 2) )))
+  }
+  def   getDotPos(s : String ): Int ={
+    if (s.indexOf('.') > 0) {
+      s.indexOf('.')
+    }else {
+      s.length
+    }
+  }
+}
 case class QueryResult(data: List[QRRow])
 case class QCondition(name: String, cond : String, value : String) extends FieldData{
 
